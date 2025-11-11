@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>请假管理</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+
+/* 设置整体字体大小为 1.5 倍（1em = 16px → 1.5em ≈ 24px） */
+body { 
+    font-family: Arial, sans-serif; 
+    margin: 0;
+    padding: 0;
+    font-size: 0.97em; /* 全局放大 1.5 倍 */
+}
+
+/* 用户信息栏样式 */
+.user-info {
+    margin-bottom: 1.25em; /* 20px → 1.25em */
+    display: flex;
+    align-items: center;
+    margin-left: 1.25em;
+    margin-top: 1.25em;
+}
+.avatar {
+    width: 2.5em; /* 40px → 2.5em */
+    height: 2.5em; /* 40px → 2.5em */
+    border-radius: 50%;
+    background-color: rgb(240,245,248);
+    margin-right: 0.625em; /* 10px → 0.625em */
+}
+.user-text {
+    display: inline-block;
+}
+.user-text h4, 
+.user-text p {
+    margin: 0;
+}
+.user-text p {
+    color: gray;
+    font-size: 0.9em; /* 相对于 body，实际 ≈ 21.6px */
+}
+
+/* 头部与内容 */
+.header { 
+    background-color: #f0f8ff; 
+    padding: 0.625em; /* 10px → 0.625em */
+}
+.content { 
+    margin: 1.25em; /* 20px → 1.25em */
+    /* 移除 font-size，继承 body */
+}
+
+.info {
+    padding-left: 0em; /* 10px → 0.625em */
+    margin-bottom: 1.25em; /* 20px → 1.25em */
+}
+
+.info, .progress {
+    margin-bottom: 1.25em;
+    position: relative;
+    padding-left: 0em;
+}
+
+.info::before, .progress::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 2.5px;
+    height: 1.2em; /* 24px → 1.5em */
+    width: 0.25em; /* 4px → 0.25em */
+    background-color: #007bff;
+}
+.progress {
+    margin-top: 2em; 
+}
+.progress::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 5.1px;
+    height: 1em;
+    width: 0.25em;
+    background-color: #007bff;
+}
+
+.stamp { 
+    float: right; 
+    margin-top: -3.125em; /* -50px → -3.125em */
+}
+
+.info p { 
+    margin: 0; 
+    line-height: 1.88; 
+    font-size: 0.96em; /* ≈ 39.6px 实际大小 */
+}
+
+.info span:first-child { 
+    color: rgb(161, 161, 161); 
+    margin-right: 0.5em;
+    flex-shrink: 0;
+    min-width: 5em; /* 80px → 5em */
+}
+
+.progress div { 
+    display: flex; 
+    align-items: center; 
+    margin: 0; 
+    line-height: 1.7; /* 增大行高以适配大字体 */
+    font-size: 0.9em; /* 继承 body 的 1.5em，实际 ≈ 36px */
+    margin-bottom: -1.1em; /* 新增：减小步骤间的间距 */
+}
+
+/* 进度图标内文字也改为 em */
+.progress .check-mark {
+    display: inline-block;
+    width: 1.25em; /* 20px → 1.25em */
+    height: 1.25em;
+    border: 0.0625em solid #4b7ccb; /* 1px → 0.0625em */
+    border-radius: 50%;
+    text-align: center;
+    line-height: 1.125em; /* 18px → 1.125em */
+    color: #4b7ccb;
+    font-size: 0.9em; /* 14px → 0.875em */
+    margin-right: 0.625em;
+}
+
+.progress .dot-mark {
+    display: inline-block;
+    width: 1.25em;
+    height: 1.25em;
+    border: 0.0625em solid #4b7ccb;
+    border-radius: 50%;
+    position: relative;
+    margin-right: 0.625em;
+}
+.progress .dot-mark span {
+    display: block;
+    width: 0.5em; /* 8px → 0.5em */
+    height: 0.5em;
+    background-color: #4b7ccb;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.progress h3 {
+    margin-bottom: 0em;
+}
+/* 时间文字 */
+.progress .time {
+    margin-left: auto;
+    color: #a1a1a1;
+    font-size: 0.9em; /* 14px → 0.875em */
+}
+
+/* 辅助信息 */
+.progress .sub-info {
+    color: #a1a1a1;
+    margin-left: 1.875em; /* 30px → 1.875em */
+    font-size: 0.9em;
+    margin-top: 0.7em;
+    margin-bottom: 0;
+    line-height: 1;
+}
+
+.progress .sub-info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 1.875em;
+    margin-top: -0.1em; 
+    margin-bottom: -0.5em;
+    line-height: 1;
+    color: #a1a1a1;
+    font-size: 0.9em;
+}
+</style>
+</head>
+<!--开始-->
+
+
+
+
+
+
+<div id="configPanel" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#f8f9fa; border-top:2px solid #007bff; padding:1em; z-index:10000; max-height:70vh; overflow-y:auto; font-size:14px; box-shadow:0 -2px 10px rgba(0,0,0,0.1);">
+  <h4>参数配置</h4>
+  <div id="configFields"></div>
+  <button onclick="saveToLocal()" style="padding:6px 12px; background:#007bff; color:white; border:none; margin-right:8px;">保存配置</button>
+  <button onclick="resetToDefault()" style="padding:6px 12px; background:#dc3545; color:white; border:none; margin-right:8px;">恢复默认</button>
+  <button onclick="hidePanel()" style="padding:6px 12px; background:#6c757d; color:white; border:none;">隐藏</button>
+</div>
+
+<script>
+// === 默认配置 ===
+const defaultConfig = {
+  user_h4_name: "张三",
+  user_p_id: "20210001",
+  handler_role: "大队长",
+  teacher_time: "2025-09-05 10:00",
+  apply_time: "2025-09-05 10:00"
+};
+
+// === 初始化配置面板 ===
+function initConfigPanel() {
+  const configFields = document.getElementById('configFields');
+  if (!configFields) return;
+
+  const saved = localStorage.getItem('leaveConfig');
+  const data = saved ? JSON.parse(saved) : {};
+
+  // 清空原有字段
+  configFields.innerHTML = '';
+
+  // === 1. .info p 字段（使用安全更新）===
+  document.querySelectorAll('.info p').forEach((p, i) => {
+    const keySpan = p.querySelector('span:first-child');
+    if (!keySpan) return;
+
+    const keyLabel = keySpan.textContent.trim();
+    const value = p.textContent.replace(keyLabel, '').trim();
+    const inputName = `field_${i}`;
+    const savedValue = data[inputName] !== undefined ? data[inputName] : value;
+
+    createInput(inputName, keyLabel, savedValue);
+  });
+
+  // === 2. 用户姓名 ===
+  const h4El = document.querySelector('.user-text h4');
+  const h4Val = data.user_h4_name || (h4El?.textContent?.trim() || defaultConfig.user_h4_name);
+  createInput('user_h4_name', '用户姓名', h4Val);
+
+  // === 3. 用户学号 ===
+  const idEl = document.querySelector('.user-text > p:not([class])');
+  const idVal = data.user_p_id || (idEl?.textContent?.trim() || defaultConfig.user_p_id);
+  createInput('user_p_id', '用户学号', idVal);
+
+  // === 4. 办理人角色 ===
+  const roleRow = Array.from(document.querySelectorAll('.progress .sub-info-row')).find(r =>
+    r.querySelector('p') && ['大队长', '辅导员'].includes(r.querySelector('p').textContent.trim())
+  );
+  const roleEl = roleRow?.querySelector('p');
+  const roleVal = data.handler_role || (roleEl?.textContent?.trim() || defaultConfig.handler_role);
+  createInput('handler_role', '办理人角色', roleVal);
+
+  // === 5. 办理时间 ===
+  const timeEls = document.querySelectorAll('.progress .time');
+  const teacherTimeEl = timeEls.length > 1 ? timeEls[1] : timeEls[0];
+  const teacherTimeVal = data.teacher_time || (teacherTimeEl?.textContent?.trim() || defaultConfig.teacher_time);
+  createInput('teacher_time', '办理时间', teacherTimeVal);
+
+  // === 6. 申请时间 ===
+  const applyDivs = Array.from(document.querySelectorAll('div')).filter(div => {
+    const pText = div.querySelector('p')?.textContent || '';
+    return pText.includes('申请');
+  });
+  const applyTimeEl = applyDivs[0]?.querySelector('.time');
+  const applyTimeVal = data.apply_time || (applyTimeEl?.textContent?.trim() || defaultConfig.apply_time);
+  createInput('apply_time', '申请时间', applyTimeVal);
+
+  // 应用配置（使用安全更新）
+  applyConfigToPage(data);
+}
+
+// 创建输入框
+function createInput(name, label, value) {
+  const div = document.createElement('div');
+  div.innerHTML = `
+    <label>${label}:<br>
+      <input type="text" name="${name}" value="${escapeHtml(value)}"
+             style="width:90%; padding:4px; margin:4px 0; font-size:14px;">
+    </label><br><br>
+  `;
+  document.getElementById('configFields').appendChild(div);
+}
+
+//安全更新函数：保留 img 标签
+function safeUpdateP(p, keySpan, newValue) {
+  // 保留 pass.png 图片
+  const passImg = p.querySelector('img[src="pass.png"]');
+  
+  // 清空内容
+  p.innerHTML = '';
+  
+  // 重新插入 keySpan 和新值
+  p.appendChild(keySpan);
+  p.appendChild(document.createTextNode(newValue));
+  
+  // 如果有 pass.png，重新插入到右侧
+  if (passImg) {
+    const imgWrapper = document.createElement('span');
+    imgWrapper.style.cssText = 'float: right; height: 1.6em; margin-top: 0.1em;';
+    imgWrapper.appendChild(passImg);
+    p.appendChild(imgWrapper);
+  }
+}
+
+// 应用配置到页面（使用安全更新）
+function applyConfigToPage(data) {
+  // === 1. .info p 字段（使用 safeUpdateP）===
+  document.querySelectorAll('.info p').forEach((p, i) => {
+    const keySpan = p.querySelector('span:first-child');
+    if (!keySpan) return;
+    const inputName = `field_${i}`;
+    if (data[inputName] === undefined) return;
+    
+    safeUpdateP(p, keySpan, data[inputName]);
+  });
+
+  // === 2. 用户姓名 ===
+  if (data.user_h4_name && document.querySelector('.user-text h4')) {
+    document.querySelector('.user-text h4').textContent = data.user_h4_name;
+  }
+
+  // === 3. 用户学号 ===
+  if (data.user_p_id) {
+    const el = document.querySelector('.user-text > p:not([class])');
+    if (el) el.textContent = data.user_p_id;
+  }
+
+  // === 4. 办理人角色 ===
+  const roleRow = Array.from(document.querySelectorAll('.progress .sub-info-row')).find(r =>
+    r.querySelector('p') && ['大队长', '辅导员'].includes(r.querySelector('p').textContent.trim())
+  );
+  if (data.handler_role && roleRow) {
+    roleRow.querySelector('p').textContent = data.handler_role;
+  }
+
+  // === 5. 办理时间 ===
+  const timeEls = document.querySelectorAll('.progress .time');
+  const teacherTimeEl = timeEls.length > 1 ? timeEls[1] : timeEls[0];
+  if (data.teacher_time && teacherTimeEl) {
+    teacherTimeEl.textContent = data.teacher_time;
+  }
+
+  // === 6. 申请时间 ===
+  const applyDivs = Array.from(document.querySelectorAll('div')).filter(div => {
+    const pText = div.querySelector('p')?.textContent || '';
+    return pText.includes('申请');
+  });
+  const applyTimeEl = applyDivs[0]?.querySelector('.time');
+  if (data.apply_time && applyTimeEl) {
+    applyTimeEl.textContent = data.apply_time;
+  }
+
+  // === 7. 进度条中的用户姓名 ===
+  if (data.user_h4_name) {
+    const subInfoEl = document.querySelector('.progress .sub-info');
+    if (subInfoEl) {
+      subInfoEl.textContent = data.user_h4_name;
+    }
+  }
+}
+
+// 保存
+function saveToLocal() {
+  const data = {};
+  document.querySelectorAll('#configFields input').forEach(input => {
+    data[input.name] = input.value;
+  });
+  localStorage.setItem('leaveConfig', JSON.stringify(data));
+  alert('配置已保存！刷新页面后生效');
+  location.reload();
+}
+
+// 恢复默认
+function resetToDefault() {
+  localStorage.removeItem('leaveConfig');
+  alert('已恢复默认配置！刷新页面生效');
+  location.reload();
+}
+
+// 隐藏/显示面板
+function hidePanel() {
+  document.getElementById('configPanel').style.display = 'none';
+}
+function showPanel() {
+  document.getElementById('configPanel').style.display = 'block';
+}
+
+// 防 XSS
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ===绑定「首页」点击触发配置面板 ===
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    initConfigPanel();
+
+    const homeLink = document.querySelector('.header a[href="#"]');
+    if (!homeLink) {
+      console.error('未找到首页链接');
+      return;
+    }
+
+    homeLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      showPanel();
+      console.log('配置面板已开启');
+    });
+
+    console.log('已绑定「首页」点击触发配置面板');
+  }, 200);
+});
+</script>
+
+
+
+
+
+
+
+<!--结束-->
+<body>
+<div class="header">
+    <a href="#">首页</a> > 应用 > 请假管理 > 请假管理
+</div>
+
+<!-- 用户信息栏 -->
+<div class="user-info">
+    <div class="avatar"></div>
+    <div class="user-text">
+        <h4>张三</h4>
+        <p>20210001</p>
+    </div>
+</div>
+
+<div style="height: 0.75em; background-color: #f3f4f8; margin: 0; padding: 0;"></div>
+
+<div class="content">
+    <div class="info">
+        <h3 style="font-size: 1.04em; margin-left: 0.5em;">请假信息</h3>
+        <p>
+    <span>请假类型:</span>其他
+    <img src="pass.png" style="float: right; margin-right: 0.7em; height: 3.3em; opacity: 0.9;">
+</p>
+        <p><span>请假去向:</span></p>
+        <p><span>详细地址:</span></p>
+        <p><span>开始时间:</span></p>
+        <p><span>结束时间:</span></p>
+        <p><span>统计时长:</span>天小时分钟</p>
+        <p><span>紧急联系人:</span></p>
+        <p><span>紧急联系人电话:</span></p>
+        <p><span>请假理由:</span></p>
+        <p><span>请假状态:</span> <span style="color: rgb(34, 142, 241);">审核通过</span></p>
+        <p><span>销假状态:</span></p>
+        <p><span>请假附件:</span></p>
+    </div>
+
+<div style="height: 0.75em; background-color: #f3f4f8; width: 100vw; position: absolute; left: 0; margin-top: -0.75em;"></div>
+
+    <div class="progress">
+        <h3 style="font-size: 1.04em; margin-left: 0.5em;">办理进度</h3>
+
+        <!-- 步骤1：申请 -->
+        <div style="align-items: center;">
+            <span class="check-mark">✓</span>
+            <p>申请 <span style="color: rgb(76,208,125);">申请</span></p>
+            <p class="time">2025-06-06 14:53</p>
+        </div>
+
+        <p class="sub-info">姓名</p>
+
+        <!-- 步骤2：辅导员审核 -->
+        <div style="align-items: center;">
+            <span class="check-mark">✓</span>
+            <p>辅导员审核 <span style="color: rgb(76,208,125);">审核通过</span></p>
+            <p class="time">2025-09-05 18:59</p>
+        </div>
+
+        <div class="sub-info-row">
+            <p>辅导员</p>
+            <p style="color: rgb(34, 142, 241);">同意</p>
+        </div>
+
+        <!-- 步骤3：结束 -->
+        <div style="align-items: center;">
+            <span class="dot-mark">
+                <span></span>
+            </span>
+            <p style="margin: 0; font-size: 0.96em;">结束</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
