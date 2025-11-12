@@ -229,12 +229,12 @@ function initConfigPanel() {
   // === 2. 用户姓名 ===
   const h4El = document.querySelector('.user-text h4');
   const h4Val = data.user_h4_name || (h4El?.textContent?.trim() || defaultConfig.user_h4_name);
-  createInput('user_h4_name', '用户姓名', h4Val);
+  createInput('user_h4_name', '徐浩佳', h4Val);
 
   // === 3. 用户学号 ===
   const idEl = document.querySelector('.user-text > p:not([class])');
   const idVal = data.user_p_id || (idEl?.textContent?.trim() || defaultConfig.user_p_id);
-  createInput('user_p_id', '用户学号', idVal);
+  createInput('user_p_id', '20243502140138', idVal);
 
   // === 4. 办理人角色 ===
   const roleRow = Array.from(document.querySelectorAll('.progress .sub-info-row')).find(r =>
@@ -253,11 +253,11 @@ function initConfigPanel() {
   // === 6. 申请时间 ===
   const applyDivs = Array.from(document.querySelectorAll('div')).filter(div => {
     const pText = div.querySelector('p')?.textContent || '';
-    return pText.includes('申请');
+    return pText.includes('2025年11月12日');
   });
   const applyTimeEl = applyDivs[0]?.querySelector('.time');
   const applyTimeVal = data.apply_time || (applyTimeEl?.textContent?.trim() || defaultConfig.apply_time);
-  createInput('apply_time', '申请时间', applyTimeVal);
+  createInput('apply_time', '2025年12月20日', applyTimeVal);
 
   // 应用配置（使用安全更新）
   applyConfigToPage(data);
